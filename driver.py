@@ -16,7 +16,7 @@ import cv2
 sio = socketio.Server()
 app = Flask(__name__)
 
-speed_limit = 15
+speed_limit = 17
 print(speed_limit)
 
 def preprocess_img(img):
@@ -37,9 +37,8 @@ def telemetry(sid, data):
     image = preprocess_img(image)
     image = np.array([image])
     speed = float(data['speed'])
-    print(speed)
-    throttle = 1.0 - speed/speed_limit
-    steering_angle = float(model.predict(image))
+    steering_angle = float(model.predict(image)) * 0.65
+    throttle = 1.0 - (speed / speed_limit)
     send_control(steering_angle, throttle)
 
 @sio.on('connect')
@@ -49,6 +48,7 @@ def connect(sid, environ):
 
 
 if __name__ == '__main__':
-    model = load_model('beta_model.h5')
+    # same as Models/model_epoch20_batch200_steps700.h5
+    model = load_model('final_model.h5')
     app = socketio.Middleware(sio, app)
     eventlet.wsgi.server(eventlet.listen(('', 4567)), app)
